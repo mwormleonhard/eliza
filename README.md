@@ -17,6 +17,7 @@ The finished script/program should take a top-down picture of a wellplate as inp
 ###HW
 * Try to make a paper mask for wellplates or coloring the flat parts. Should make circle detection much easier.
 * Experiment with illumination
+
 ###SW
 * Make circle detection robust (See HW)
 * Construct function for basic output functionality
