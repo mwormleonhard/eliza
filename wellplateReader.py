@@ -1,4 +1,15 @@
-# http://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/py_imgproc/py_houghcircles/py_houghcircles.html
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+#  wellplateReader.py
+#
+#----------------------------------------------------------------------------
+# "THE BEER-WARE LICENSE" (Revision 42):
+# <mwormleonhard@gmail.com> wrote this file. As long as you retain this notice you
+# can do whatever you want with this stuff. If we meet some day, and you think
+# this stuff is worth it, you can buy me a beer in return. 
+# Martin Worm-leonhard
+# ----------------------------------------------------------------------------
 
 import cv2
 import numpy as np
