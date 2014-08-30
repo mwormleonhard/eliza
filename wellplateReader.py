@@ -16,28 +16,44 @@
 
 import cv2
 import numpy as np
+import math
+
 imagefile='BlankFar.jpg'
 def updateTrackbars(dummyVal):
-	cimg = cv2.imread(imagefile,1)
-	p1 = cv2.getTrackbarPos('param1', 'detected circles')
-	p2 = cv2.getTrackbarPos('param2', 'detected circles')
-	minR = cv2.getTrackbarPos('minRadius', 'detected circles')
-	maxR = cv2.getTrackbarPos('maxRadius', 'detected circles') 
-	circles = cv2.HoughCircles(img, cv2.cv.CV_HOUGH_GRADIENT, 1, 20, param1=p1, param2=p2, minRadius=minR, maxRadius=maxR)
-	circles = np.uint16(np.around(circles[0,:])) #Remove extra dimension of array, round to integers and cast to uint16
-	circles = circles[circles[:,0].argsort()] #Deep magic for sorting array by x-value without casting to structured array
-	print circles
-	print circles[:,2]
-	circles[:,2] = np.around(np.mean(circles[:,2])) # Make every circle the same size, so area is constant
-	print circles[:,2]
+    cimg = cv2.imread(imagefile,1)
+    p1 = cv2.getTrackbarPos('param1', 'detected circles')
+    p2 = cv2.getTrackbarPos('param2', 'detected circles')
+    minR = cv2.getTrackbarPos('minRadius', 'detected circles')
+    maxR = cv2.getTrackbarPos('maxRadius', 'detected circles') 
+    circles = cv2.HoughCircles(img, cv2.cv.CV_HOUGH_GRADIENT, 1, 20, param1=p1, param2=p2, minRadius=minR, maxRadius=maxR)
+    circles = np.uint16(np.around(circles[0,:])) #Remove extra dimension of array, round to integers and cast to uint16
+    #circles = circles[circles[:,0].argsort()] #Deep magic for sorting array by x-value without casting to structured array
+    print circles
+    print circles[:,0].argsort() // 12 # column
+    print circles[:,1].argsort() // 8 #row
+    circles[:,2] = np.around(np.mean(circles[:,2])) # Make every circle the same size, so area is constant
+    print circles[:,2]
+   
 
-	for (x,y,r) in circles:
-		# draw the outer circle
-		cv2.circle(cimg,(x,y),r,(0,255,0),2)
-		cv2.circle(cimg,(0,0),100,(0,255,0),2) #Top left? Yes!
-		# draw the center of the circle
-		cv2.circle(cimg,(x,y),2,(0,0,255),3)
-	cv2.imshow('detected circles',cimg)
+    for (x,y,r) in circles:
+         print measureRGBmean(x,y,r,cimg) #Do this before drawing on the image!
+        # draw the outer circle
+         cv2.circle(cimg,(x,y),r,(0,255,0),2)
+         cv2.circle(cimg,(0,0),100,(0,255,0),2) #Top left? Yes!
+        # draw the center of the circle
+         cv2.circle(cimg,(x,y),2,(0,0,255),3)
+        
+    cv2.imshow('detected circles',cimg)
+    
+def measureRGBmean(x, y, r, img):
+    result=[0,0,0]
+    k=0
+    for i in xrange(x-r, x+r):
+        for j in xrange(y-r, y+r):
+            if math.sqrt( (i - x)**2 + (j - y)**2 ) < r:
+                result+=img[j,i] #Y-coordinate is the first dimension of the array. 
+                k+=1
+    return result/k #Values reported: [B,G,R]
                             
 
 
@@ -54,7 +70,7 @@ updateTrackbars(None)
 
 
 while(True):
-	cv2.waitKey(0)
+    cv2.waitKey(0)
 
 cv2.imwrite('out.jpg', cimg)
 cv2.waitKey(0)
