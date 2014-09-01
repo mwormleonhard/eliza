@@ -54,29 +54,48 @@ def findCircles(img):
     circles = cv2.HoughCircles(img, cv2.cv.CV_HOUGH_GRADIENT, 1, 20, param1=p1, param2=p2, minRadius=minR, maxRadius=maxR)
     circles = np.uint16(np.around(circles[0,:])) #Remove extra dimension of array, round to integers and cast to uint16
        
-    # Make every circle the same size, so area is constant. Maybe subtract 10%?
+    # Make every circle the same size, so area is constant. Subtract 10%
     circles[:,2] = np.around(np.mean(circles[:,2])*0.9) 
-    #print circles[:,2]
     return circles
    
 def updateWindow():
     cimg, img = readImage(imagefile) #Reread image file to clear overlays
     circles = findCircles(img)
-    for (x,y,r) in circles:
+    wellcol = scaleRangeLinearCeil(circles[:,0], low = 1, high = 12) # columnnumber, 1-indexed
+    wellrow = scaleRangeLinearCeil(circles[:,1], low = 1, high = 8) #rownumber, 1-indexed         
+    circles = np.column_stack((circles, wellcol, wellrow))
+    for (x, y, r, col, row) in circles:
          # draw the outer circle
          cv2.circle(cimg,(x,y),r,(0,255,0),2)
          # draw the center of the circle
          cv2.circle(cimg,(x,y),2,(0,0,255),3)
-        
+         # Test numbering of rows and cols
+         cv2.putText (cimg, str(int(row))+","+str(int(col)), (x,y), cv2.FONT_HERSHEY_PLAIN, 1, 255)
+    #Show image
     cv2.imshow('detected circles',cimg)
+    # Write image to disk. (Debugging/Diagnostic/informational)
+    cv2.imwrite(imagefile+'.out.jpg', cimg)
+
+def scaleRangeLinearCeil(inputArray, low=0, high=100):
+    # Function for numbering wells    
+    # Sort of inelegant, but functional
+    minval = inputArray.min()    
+    maxval = inputArray.max()
+    rng = maxval - minval        
+    return np.ceil(np.float16(inputArray - minval + low) / (rng + low) * high)
+    
 
 def saveOutput():
     circles = findCircles(img)
-    wellcol = circles[:,0].argsort() // 8 # column
-    wellrow = circles[:,1].argsort() // 12 #row
+    wellcol = scaleRangeLinearCeil(circles[:,0], low = 1, high = 12) # columnnumber, 1-indexed
+    wellrow = scaleRangeLinearCeil(circles[:,1], low = 1, high = 8) #rownumber, 1-indexed
+    result = np.zeros(3)    
     for (x,y,r) in circles:
-        print measureRGBmean(x,y,r,cimg) #Do this before drawing on the image!    
-
+        result = np.vstack((result,measureRGBmean(x,y,r,cimg)))
+    result = np.column_stack((wellrow, wellcol, result[1:]))
+    print result
+    np.savetxt(imagefile+'.csv', result, header='Row,Col,B,G,R', delimiter=',', comments='')
+    
 
 #main
 imagefile='BlankFar.jpg'
@@ -92,11 +111,5 @@ while(True):
         exit(0)
     elif  k == ord('s'):
         saveOutput()
-
-
-cv2.imwrite('out.jpg', cimg)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-
 
 

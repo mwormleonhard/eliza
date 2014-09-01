@@ -2,7 +2,8 @@
 A wellplate reader implemented in python and openCV.
 
 ##Current version / state
-None / Prototyping and experimenting
+0.1 / Basic functionality done. Probably not robust / stable
+
 
 ## Objectives
 ###Minimum
@@ -18,6 +19,13 @@ The finished script/program should take a top-down picture of a wellplate as inp
 * Try to make a paper mask for wellplates or coloring the flat parts. Should make circle detection much easier.
 * Experiment with illumination
 
+####DONE
+* Coloring well rims with sharpie: Very robust detection.
+ 
 ###SW
 * Make circle detection robust (See HW)
+
+####DONE
 * Construct function for basic output functionality
+* Interactive window for playing with parameters
+* Outputs overlaid image for demonstration / testing
