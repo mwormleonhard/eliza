@@ -18,7 +18,7 @@ import cv2
 import numpy as np
 import math
 
-def doNothing():
+def doNothing(dummyVar):
     pass
 
 def measureRGBmean(x, y, r, img):
@@ -31,8 +31,6 @@ def measureRGBmean(x, y, r, img):
                 k+=1
     return result/k #Values reported: [B,G,R]
                             
-imagefile='BlankFar.jpg'
-
 def readImage(filename):
     cimg = cv2.imread(imagefile,cv2.CV_LOAD_IMAGE_COLOR)
     img = cv2.cvtColor(cimg, cv2.COLOR_BGR2GRAY) 
@@ -46,9 +44,8 @@ def showWindow(cimg, img):
     cv2.createTrackbar('minRadius', 'detected circles', 20, 500, doNothing) 
     cv2.createTrackbar('maxRadius', 'detected circles', 40, 500, doNothing)
     cv2.imshow('detected circles',cimg)
-   
-def updateWindow():
-    cimg, img = readImage(imagefile) #Reread image file to clear overlays
+    
+def findCircles(img):
     p1 = cv2.getTrackbarPos('param1', 'detected circles')
     p2 = cv2.getTrackbarPos('param2', 'detected circles')
     minR = cv2.getTrackbarPos('minRadius', 'detected circles')
@@ -56,14 +53,15 @@ def updateWindow():
     
     circles = cv2.HoughCircles(img, cv2.cv.CV_HOUGH_GRADIENT, 1, 20, param1=p1, param2=p2, minRadius=minR, maxRadius=maxR)
     circles = np.uint16(np.around(circles[0,:])) #Remove extra dimension of array, round to integers and cast to uint16
-    #print circles
-    wellcol = circles[:,0].argsort() // 8 # column
-    wellrow = circles[:,1].argsort() // 12 #row
+       
     # Make every circle the same size, so area is constant. Maybe subtract 10%?
     circles[:,2] = np.around(np.mean(circles[:,2])*0.9) 
     #print circles[:,2]
+    return circles
    
-
+def updateWindow():
+    cimg, img = readImage(imagefile) #Reread image file to clear overlays
+    circles = findCircles(img)
     for (x,y,r) in circles:
          # draw the outer circle
          cv2.circle(cimg,(x,y),r,(0,255,0),2)
@@ -73,27 +71,15 @@ def updateWindow():
     cv2.imshow('detected circles',cimg)
 
 def saveOutput():
-    cimg, img = readImage(imagefile) #Reread image file to clear overlays
-    p1 = cv2.getTrackbarPos('param1', 'detected circles')
-    p2 = cv2.getTrackbarPos('param2', 'detected circles')
-    minR = cv2.getTrackbarPos('minRadius', 'detected circles')
-    maxR = cv2.getTrackbarPos('maxRadius', 'detected circles')
-    
-    circles = cv2.HoughCircles(img, cv2.cv.CV_HOUGH_GRADIENT, 1, 20, param1=p1, param2=p2, minRadius=minR, maxRadius=maxR)
-    circles = np.uint16(np.around(circles[0,:])) #Remove extra dimension of array, round to integers and cast to uint16
-    #print circles
+    circles = findCircles(img)
     wellcol = circles[:,0].argsort() // 8 # column
     wellrow = circles[:,1].argsort() // 12 #row
-    # Make every circle the same size, so area is constant. Maybe subtract 10%?
-    circles[:,2] = np.around(np.mean(circles[:,2])*0.9) 
-    #print circles[:,2]
-   
-
     for (x,y,r) in circles:
         print measureRGBmean(x,y,r,cimg) #Do this before drawing on the image!    
 
 
 #main
+imagefile='BlankFar.jpg'
 cimg, img = readImage(imagefile)
 showWindow(cimg, img)
 
