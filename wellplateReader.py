@@ -17,6 +17,7 @@
 import cv2
 import numpy as np
 import math
+import argparse
 
 def doNothing(dummyVar):
     pass
@@ -98,7 +99,11 @@ def saveOutput():
     
 
 #main
-imagefile='BlankFar.jpg'
+ap = argparse.ArgumentParser(description="Wellplate reader")
+ap.add_argument('imagefile', help="Path to image file")
+arguments = ap.parse_args()
+ 
+imagefile=arguments.imagefile
 cimg, img = readImage(imagefile)
 showWindow(cimg, img)
 
